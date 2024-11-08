@@ -16,6 +16,6 @@ deploy:
     - echo "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
     - echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
     - rsync -vv -rz --delete --exclude='.env' . $elk_user@$elk_ip:$DEPLOY_DIR
-    - ssh $elk_user@$elk_ip "cd $DEPLOY_DIR && docker compose down && docker compose up -d"
+    - ssh $elk_user@$elk_ip "cd $DEPLOY_DIR && docker compose down && docker compose up -d --remove-orphans"
   only:
     - master
