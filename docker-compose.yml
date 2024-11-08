@@ -1,4 +1,3 @@
-version: "3.8"
 volumes:
   certs:
     driver: local
@@ -227,6 +226,9 @@ services:
     labels:
       co.elastic.logs/module: logstash
     user: root
+    ports:
+      - "9600:9600"
+      - "9504:9504"
     volumes:
       - certs:/usr/share/logstash/certs
       - logstashdata01:/usr/share/logstash/data
@@ -236,6 +238,10 @@ services:
       - ELASTIC_USER=elastic
       - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
       - ELASTIC_HOSTS=https://es01:9200
+      - LOGSTASH_USER=${LOGSTASH_USER}
+      - LOGSTASH_PASSWORD=${LOGSTASH_PASSWORD}
+      - LOGSTASH_PORT=${LOGSTASH_PORT}
+
 
   fleet-server:
     depends_on:
