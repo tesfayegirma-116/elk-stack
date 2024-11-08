@@ -1,0 +1,21 @@
+stages:
+  - deploy
+
+variables:
+  DEPLOY_DIR: /home/admin/elastic-stack
+
+
+deploy:
+  stage: deploy
+  image: alpine:latest
+  script:
+    - apk update && apk add openssh-client bash rsync docker-compose
+    - eval $(ssh-agent -s)
+    - echo "$elk_ssh" | tr -d '\r' | ssh-add -
+    - mkdir -p ~/.ssh
+    - echo "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+    - echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
+    - rsync -vv -rz --delete --exclude='.env' . $elk_user@$elk_ip:$DEPLOY_DIR
+    - ssh $USER@$IP "cd $DEPLOY_DIR && docker compose down && docker compose up -d --build"
+  only:
+    - master
