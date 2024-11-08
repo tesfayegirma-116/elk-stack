@@ -2,7 +2,7 @@ filebeat.inputs:
 - type: filestream
   id: default-filestream
   paths:
-    - ingest_data/*.log
+    - /var/log/*.log
 
 filebeat.autodiscover:
   providers:
