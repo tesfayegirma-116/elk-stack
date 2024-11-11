@@ -37,8 +37,8 @@ xpack.fleet.outputs:
     name: default
     type: elasticsearch
     hosts: [ http://elasticsearch:9200 ]
-    is_default: false
-    is_default_monitoring: false
+    is_default: true
+    is_default_monitoring: true
 
 xpack.fleet.packages:
   - name: fleet_server
