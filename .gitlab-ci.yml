@@ -2,7 +2,7 @@ stages:
   - deploy
 
 variables:
-  DEPLOY_DIR: /home/admin/elastic-stack
+  DEPLOY_DIR: /home/admin/elk-stack
 
 
 deploy:
