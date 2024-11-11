@@ -10,7 +10,8 @@ metricbeat.modules:
   username: ${ELASTIC_USER}
   password: ${ELASTIC_PASSWORD}
   ssl:
-    enabled: false  # Disable SSL
+    enabled: true
+    certificate_authorities: ${CA_CERT}
 
 - module: logstash
   xpack.enabled: true
@@ -26,7 +27,8 @@ metricbeat.modules:
   password: ${ELASTIC_PASSWORD}
   xpack.enabled: true
   ssl:
-    enabled: false  # Disable SSL
+    enabled: true
+    certificate_authorities: ${CA_CERT}
 
 - module: docker
   metricsets:
@@ -35,6 +37,7 @@ metricbeat.modules:
     - "diskio"
     - "healthcheck"
     - "info"
+    #- "image"
     - "memory"
     - "network"
   hosts: ["unix:///var/run/docker.sock"]
@@ -50,4 +53,5 @@ output.elasticsearch:
   username: ${ELASTIC_USER}
   password: ${ELASTIC_PASSWORD}
   ssl:
-    enabled: false   # Disable SSL
+    enabled: true
+    certificate_authorities: ${CA_CERT}
