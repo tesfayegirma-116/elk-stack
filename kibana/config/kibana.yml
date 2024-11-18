@@ -9,9 +9,6 @@ elasticsearch.hosts: [ http://elasticsearch:9200 ]
 monitoring.ui.container.elasticsearch.enabled: true
 monitoring.ui.container.logstash.enabled: true
 
-xpack.encryptedSavedObjects.encryptionKey: "72add3d8f4ed209173bb5020530974e4284d5295192dac00524c4fb387bf56a3"
-
-
 ## X-Pack security credentials
 #
 elasticsearch.username: kibana_system
