@@ -1,27 +1,15 @@
 cluster.name: docker-cluster
 network.host: 0.0.0.0
 
-# Cluster Health and Shard Allocation
+# X-Pack settings
+xpack.license.self_generated.type: basic
+xpack.security.enabled: true
+
+# Cluster settings for Elasticsearch 8.x
 cluster.routing.allocation.disk.threshold_enabled: true
 cluster.routing.allocation.disk.watermark.low: "85%"
 cluster.routing.allocation.disk.watermark.high: "90%"
 cluster.routing.allocation.disk.watermark.flood_stage: "95%"
 
-# Shard Allocation Settings
-cluster.routing.allocation.enable: all
-cluster.routing.rebalance.enable: all
-
-# Performance and Stability
-node.master: true
-node.data: true
-node.ingest: true
-
-# Logging and Monitoring
-path.logs: /usr/share/elasticsearch/logs
-
-# X-Pack Settings
-xpack.license.self_generated.type: basic
-xpack.security.enabled: true
-
-# Prevent split-brain scenarios
-discovery.zen.minimum_master_nodes: 1
+# Single node discovery
+discovery.type: single-node
