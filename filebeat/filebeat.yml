@@ -1,0 +1,12 @@
+filebeat.inputs:
+  - type: container
+    paths:
+      - /var/lib/docker/containers/*/*.log
+
+output.elasticsearch:
+  hosts: ["http://elasticsearch1:9200", "http://elasticsearch2:9200", "http://elasticsearch3:9200"]
+  username: "filebeat_internal"
+  password: "${FILEBEAT_INTERNAL_PASSWORD}"
+
+setup.kibana:
+  host: "kibana:5601" 

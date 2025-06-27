@@ -65,6 +65,66 @@ services:
       - elk
     restart: unless-stopped
 
+  elasticsearch1:
+    build:
+      context: elasticsearch/
+      args:
+        ELASTIC_VERSION: ${ELASTIC_VERSION}
+    volumes:
+      - ./elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro,Z
+      - elasticsearch1:/usr/share/elasticsearch/data:Z
+    ports:
+      - 9200:9200
+      - 9300:9300
+    environment:
+      node.name: elasticsearch1
+      cluster.name: elk-cluster
+      discovery.seed_hosts: elasticsearch1,elasticsearch2,elasticsearch3
+      cluster.initial_master_nodes: elasticsearch1,elasticsearch2,elasticsearch3
+      ES_JAVA_OPTS: -Xms2g -Xmx2g
+      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD:-}
+    networks:
+      - elk
+    restart: unless-stopped
+
+  elasticsearch2:
+    build:
+      context: elasticsearch/
+      args:
+        ELASTIC_VERSION: ${ELASTIC_VERSION}
+    volumes:
+      - ./elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro,Z
+      - elasticsearch2:/usr/share/elasticsearch/data:Z
+    environment:
+      node.name: elasticsearch2
+      cluster.name: elk-cluster
+      discovery.seed_hosts: elasticsearch1,elasticsearch2,elasticsearch3
+      cluster.initial_master_nodes: elasticsearch1,elasticsearch2,elasticsearch3
+      ES_JAVA_OPTS: -Xms2g -Xmx2g
+      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD:-}
+    networks:
+      - elk
+    restart: unless-stopped
+
+  elasticsearch3:
+    build:
+      context: elasticsearch/
+      args:
+        ELASTIC_VERSION: ${ELASTIC_VERSION}
+    volumes:
+      - ./elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro,Z
+      - elasticsearch3:/usr/share/elasticsearch/data:Z
+    environment:
+      node.name: elasticsearch3
+      cluster.name: elk-cluster
+      discovery.seed_hosts: elasticsearch1,elasticsearch2,elasticsearch3
+      cluster.initial_master_nodes: elasticsearch1,elasticsearch2,elasticsearch3
+      ES_JAVA_OPTS: -Xms2g -Xmx2g
+      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD:-}
+    networks:
+      - elk
+    restart: unless-stopped
+
   logstash:
     build:
       context: logstash/
@@ -80,12 +140,14 @@ services:
       - 9600:9600
       - 9504:9504
     environment:
-      LS_JAVA_OPTS: -Xms512m -Xmx512m
+      LS_JAVA_OPTS: -Xms1g -Xmx1g
       LOGSTASH_INTERNAL_PASSWORD: ${LOGSTASH_INTERNAL_PASSWORD:-}
     networks:
       - elk
     depends_on:
-      - elasticsearch
+      - elasticsearch1
+      - elasticsearch2
+      - elasticsearch3
     restart: unless-stopped
 
   kibana:
@@ -102,7 +164,49 @@ services:
     networks:
       - elk
     depends_on:
-      - elasticsearch
+      - elasticsearch1
+      - elasticsearch2
+      - elasticsearch3
+    restart: unless-stopped
+
+  metricbeat:
+    image: docker.elastic.co/beats/metricbeat:${ELASTIC_VERSION}
+    user: root
+    environment:
+      ELASTICSEARCH_HOSTS: "http://elasticsearch1:9200,http://elasticsearch2:9200,http://elasticsearch3:9200"
+      ELASTICSEARCH_USERNAME: "metricbeat_internal"
+      ELASTICSEARCH_PASSWORD: ${METRICBEAT_INTERNAL_PASSWORD:-}
+    volumes:
+      - ./metricbeat/metricbeat.yml:/usr/share/metricbeat/metricbeat.yml:ro,Z
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /sys/fs/cgroup:/hostfs/sys/fs/cgroup:ro
+      - /proc:/hostfs/proc:ro
+      - /:/hostfs:ro
+    networks:
+      - elk
+    depends_on:
+      - elasticsearch1
+      - elasticsearch2
+      - elasticsearch3
+    restart: unless-stopped
+
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:${ELASTIC_VERSION}
+    user: root
+    environment:
+      ELASTICSEARCH_HOSTS: "http://elasticsearch1:9200,http://elasticsearch2:9200,http://elasticsearch3:9200"
+      ELASTICSEARCH_USERNAME: "filebeat_internal"
+      ELASTICSEARCH_PASSWORD: ${FILEBEAT_INTERNAL_PASSWORD:-}
+    volumes:
+      - ./filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro,Z
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - elk
+    depends_on:
+      - elasticsearch1
+      - elasticsearch2
+      - elasticsearch3
     restart: unless-stopped
 
 networks:
@@ -111,3 +215,6 @@ networks:
 
 volumes:
   elasticsearch:
+  elasticsearch1:
+  elasticsearch2:
+  elasticsearch3:

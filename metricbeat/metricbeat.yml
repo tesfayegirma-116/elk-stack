@@ -1,0 +1,11 @@
+metricbeat.config.modules:
+  path: ${path.config}/modules.d/*.yml
+  reload.enabled: false
+
+output.elasticsearch:
+  hosts: ["http://elasticsearch1:9200", "http://elasticsearch2:9200", "http://elasticsearch3:9200"]
+  username: "metricbeat_internal"
+  password: "${METRICBEAT_INTERNAL_PASSWORD}"
+
+setup.kibana:
+  host: "kibana:5601" 

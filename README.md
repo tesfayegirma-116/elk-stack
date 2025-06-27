@@ -87,6 +87,15 @@ own_. [sherifabdlnaby/elastdocker][elastdocker] is one example among others of p
    * [How to enable a remote JMX connection to a service](#how-to-enable-a-remote-jmx-connection-to-a-service)
 1. [Going further](#going-further)
    * [Plugins and integrations](#plugins-and-integrations)
+1. [Production-Grade Enhancements](#production-grade-enhancements)
+   * [High Availability](#high-availability)
+   * [Metricbeat & Filebeat](#metricbeat-&-filebeat)
+   * [Index Lifecycle Management (ILM)](#index-lifecycle-management-(ilm))
+   * [Snapshots (Backups)](#snapshots-(backups))
+   * [Alerting in Kibana](#alerting-in-kibana)
+   * [Secrets Management](#secrets-management)
+   * [JVM and Resource Tuning](#jvm-and-resource-tuning)
+   * [Automated Deployment](#automated-deployment)
 
 ## Requirements
 
@@ -159,8 +168,8 @@ docker compose up
 Give Kibana about a minute to initialize, then access the Kibana web UI by opening <http://localhost:5601> in a web
 browser and use the following (default) credentials to log in:
 
-* user: *elastic*
-* password: *changeme*
+* user: _elastic_
+* password: _changeme_
 
 > [!NOTE]
 > Upon the initial startup, the `elastic`, `logstash_internal` and `kibana_system` Elasticsearch users are initialized
@@ -236,8 +245,8 @@ reset the passwords of all aforementioned Elasticsearch users to random secrets.
 Launch the Kibana web UI by opening <http://localhost:5601> in a web browser, and use the following credentials to log
 in:
 
-* user: *elastic*
-* password: *\<your generated elastic password>*
+* user: _elastic_
+* password: _\<your generated elastic password>_
 
 Now that the stack is fully configured, you can go ahead and inject some log entries.
 
@@ -461,6 +470,76 @@ See the following Wiki pages:
 * [External applications](https://github.com/deviantony/docker-elk/wiki/External-applications)
 * [Popular integrations](https://github.com/deviantony/docker-elk/wiki/Popular-integrations)
 
+## Production-Grade Enhancements
+
+### High Availability
+
+* The stack now runs 3 Elasticsearch nodes for redundancy and high availability.
+
+### Metricbeat & Filebeat
+
+* Metricbeat and Filebeat are included for system and log monitoring.
+
+* Their configs are in `metricbeat/metricbeat.yml` and `filebeat/filebeat.yml`.
+
+### Index Lifecycle Management (ILM)
+
+* Create an ILM policy in Kibana Dev Tools:
+
+```json
+PUT _ilm/policy/logs_policy
+{
+  "policy": {
+    "phases": {
+      "hot": { "actions": { "rollover": { "max_size": "50GB", "max_age": "30d" } } },
+      "delete": { "min_age": "90d", "actions": { "delete": {} } }
+    }
+  }
+}
+```
+
+* Attach the policy to your index template or indices.
+
+### Snapshots (Backups)
+
+* Register a snapshot repository (e.g., local):
+
+```json
+PUT _snapshot/my_backup
+{
+  "type": "fs",
+  "settings": { "location": "/usr/share/elasticsearch/backup" }
+}
+```
+
+* Schedule snapshots using a cron job or Kibana UI.
+
+### Alerting in Kibana
+
+* Go to "Stack Management > Rules and Connectors" in Kibana.
+
+* Create connectors (e.g., email, Slack).
+* Add rules for disk usage, node down, error rates, etc.
+
+### Secrets Management
+
+* Store passwords in environment variables or Docker secrets.
+
+* Do not commit secrets to version control.
+
+### JVM and Resource Tuning
+
+* JVM heap size for Elasticsearch: `-Xms2g -Xmx2g` (adjust as needed).
+
+* JVM heap size for Logstash: `-Xms1g -Xmx1g` (adjust as needed).
+
+### Automated Deployment
+
+* Use `docker compose up setup` for initial user/role setup.
+
+* Use `docker compose up` to start the stack.
+* For upgrades, rebuild images with `docker compose build`.
+
 [elk-stack]: https://www.elastic.co/what-is/elk-stack
 [elastic-docker]: https://www.docker.elastic.co/
 [subscriptions]: https://www.elastic.co/subscriptions
@@ -485,9 +564,6 @@ See the following Wiki pages:
 [builtin-users]: https://www.elastic.co/guide/en/elasticsearch/reference/current/built-in-users.html
 [ls-monitoring]: https://www.elastic.co/guide/en/logstash/current/monitoring-with-metricbeat.html
 [sec-cluster]: https://www.elastic.co/guide/en/elasticsearch/reference/current/secure-cluster.html
-
-[connect-kibana]: https://www.elastic.co/guide/en/kibana/current/connect-to-elasticsearch.html
-[index-pattern]: https://www.elastic.co/guide/en/kibana/current/index-patterns.html
 
 [config-es]: ./elasticsearch/config/elasticsearch.yml
 [config-kbn]: ./kibana/config/kibana.yml
